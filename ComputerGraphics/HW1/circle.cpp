@@ -1,34 +1,35 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <stdlib.h>
-#include <vector>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 
 int cocX = 1;  //Centor of Circle X
 int cocY = 1;  //Centor of Circle Y
 int Radius = 50;
 
-int startY; 
-int startX;
-int endX;
-int endY;
+void plot8(int x, int y) {
+	glColor3d(1.0, 0.0, 0.0);
+	glVertex2i(cocX +x, cocY +y);
+	glVertex2i(cocX -x, cocY +y);
+	glVertex2i(cocX +x, cocY -y);
+	glVertex2i(cocX -x, cocY -y);
+	glVertex2i(cocX +y, cocY +x);
+	glVertex2i(cocX -y, cocY +x);
+	glVertex2i(cocX +y, cocY -x);
+	glVertex2i(cocX -y, cocY -x);
+}
 
-void bresenham() { //기울기가 0<m<1일 때 작동한다.
-		int W = endX - startX;
-		int H = endY - startY;
-		int x = startX;
-		int y = startY;
-		int F = 2 * H - W; // F의 초기값. 중점과 직선과의 관계 파악
-		int disF1 = 2 * H; // 중단점보다 직선이 아래있다. y유지
-		int disF2 = 2 * (H - W); // 중단점보다 직선이 위에있다. y+1
+void bresenhamLine(int endX, int endY) { 
+	int x = 0; // 직선의 시작점이 (0,0)임을 의미
+	int y = 0;
+	int W = endX; // 본래 endX - startX 지만, start지점이 원점이므로 끝점만 표시했다.
+	int H = endY;
+
+	int F = 2 * H - W; // F의 초기값. 중점과 직선과의 관계 파악
+	int disF1 = 2 * H; // 중단점보다 직선이 아래있다. y유지
+	int disF2 = 2 * (H - W); // 중단점보다 직선이 위에있다. y+1
 	
-
 	for (x; x <= endX; ++x) {
-		glVertex2i(x, y); // 시작점 찍고
+		plot8(x,y); 
 		if (F < 0) {
 			F += disF1;
 		}
@@ -39,33 +40,28 @@ void bresenham() { //기울기가 0<m<1일 때 작동한다.
 	}
 }
 
-void oneEightCircle(int x, int y) { // 원의 중심과 반지름을 받는다. 
-	int r = Radius;
-	startX = x;
-	startY = y;
-	double angle;
-
-	for (angle = 0.25 * 3.14; angle <= 0.5 * 3.14; angle += 0.01) { 
-		endX = startX + r * sin(angle);
-		endY = startY + r * cos(angle);
-		bresenham();
-	}
-
-}
-
-void circle() {
+void circle() {  
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_POINTS);
-	glColor3d(1.0, 0.0, 0.0);
+	
+	int r = Radius;
+	int x = r; // 3시 방향에서 시작함을 의미
+	int y = 0;
+	int F = 1 - r; // 반시계로 말아올리는 원의 판별식 초기값
 
-	oneEightCircle(cocX, cocY); 
-	oneEightCircle(cocX, -cocY);
-	oneEightCircle(-cocX, cocY);
-	oneEightCircle(-cocX, -cocY);
-	oneEightCircle(cocY, cocX);
-	oneEightCircle(cocY, -cocX);
-	oneEightCircle(-cocY, cocX);
-	oneEightCircle(-cocY, -cocX);
+	glColor3d(1.0, 0.0, 0.0);
+	glVertex2i(cocX+x, cocY+y); // 점을 찍을 때는 원의 중심만큼 이동해준다.
+	while (x > y) { 
+		bresenhamLine(x, y);
+		++y;
+		if (F < 0) {
+			F += 2 * y + 1;
+		}
+		else {
+			--x;
+			F += 2 * y - 2 * x + 1;
+		}
+	}
 
 	glEnd();
 	glFlush();
