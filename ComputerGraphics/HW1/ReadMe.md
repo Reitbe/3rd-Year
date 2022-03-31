@@ -12,4 +12,4 @@ image size 및 각 도형을 결정하는 데이타는 별도의 data file에서
 source program 및 data file의 내용
 프로그램을 실행하여 생성된 image 를 capture한 image file (반드시 color image 이어야 함 )
 
-circle 수정중
+triangle 수정중
