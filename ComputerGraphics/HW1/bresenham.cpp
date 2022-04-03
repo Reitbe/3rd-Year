@@ -2,10 +2,10 @@
 #include <GL/glut.h>
 #include <stdlib.h>
 
-int startX = 90;
-int startY = 10;
-int endX = 10;
-int endY = 80;
+int startX = 10;
+int startY = 80;
+int endX = 30;
+int endY = 10;
 
 void discrimination(int n, int x, int y) {
 	switch (n)
@@ -28,9 +28,10 @@ void bresenham() { //기울기가 0<m<1일 때 작동한다.
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_POINTS);
 
-	int temp;
+	int temp = 0;
 	int caseNumber;
 
+	/*
 	if (startX < startX && startY < endY) { caseNumber = 1; } // 1
 	else if (startX > startX && startY < endY) { endX = endX + 2 * (startX - endX); caseNumber = 2; } // 3
 	else if (startX < startX && startY > endY) { endY = endY + 2 * (startY - endY); caseNumber = 3;} // 2
@@ -39,14 +40,16 @@ void bresenham() { //기울기가 0<m<1일 때 작동한다.
 		temp = startY; startY = endY; endY = temp;
 		caseNumber = 4;
 	} //4
-
+	*/
 	int x = startX;
 	int y = startY;
 	int W = endX - startX;
 	int H = endY - startY;
 	int F;
 
-	if (W >= H) { // 기울기가 0<m<1인 경우
+	if (H < 0) temp = 1;
+
+	if (W >= H && temp == 0) { // 기울기가 0<m<1인 경우, 동시에 우상향
 		F = 2 * H - W; 
 		while (x <= endX) {
 			glVertex2i(x, y);
@@ -61,7 +64,7 @@ void bresenham() { //기울기가 0<m<1일 때 작동한다.
 			++x;
 		}
 	}
-	else { // 기울기가 1<m<무한인 경우
+	else if(W < H && temp == 0){ // 기울기가 1<m<무한인 경우
 		F = 2 * W - H;
 		while (y <= endY) {
 			glVertex2i(x, y);
@@ -74,6 +77,36 @@ void bresenham() { //기울기가 0<m<1일 때 작동한다.
 				F += 2 * (W - H);
 			}
 			++y;
+		}
+	}
+	else if (W > -H && temp == 1) {
+		F = 2 * H + W;
+		while (x <= endX) {
+			glVertex2i(x, y);
+			//discrimination(caseNumber, x, y); // 시작점 찍고
+			if (F < 0) {
+				--y;
+				F += 2 * (H + W);
+			}
+			else {
+				F += 2 * H;
+			}
+			++x;
+		}
+	}
+	else if (W < -H && temp == 1) {
+		F = 2 * W + H;
+		while (y >= endY) {
+			glVertex2i(x, y);
+			//discrimination(caseNumber, x, y); // 시작점 찍고
+			if (F < 0) {
+				++x;
+				F += 2 * (H + W);
+			}
+			else {
+				F += 2 * W;
+			}
+			--y;
 		}
 	}
 
