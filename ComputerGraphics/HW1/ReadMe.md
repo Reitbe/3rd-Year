@@ -15,3 +15,4 @@ source program 및 data file의 내용
 - circle 완료
 - ellipse 완료
 - bresenham 완료
+- triangle 완료
