@@ -1,0 +1,18 @@
+--Triangle--
+PointOne X: -80
+PointOne Y: -30
+PointTwo X: -50
+PointTwo Y: 60
+PointThree X:50
+PointThree Y:30
+
+--Ractangle--
+PointOne X :-10
+PointOne Y :-10
+PointTwo X :80
+PointTwo Y :60
+
+--Circle--
+CenterOfCircle X :1
+CenterOfCircle Y :-20
+Radius :40

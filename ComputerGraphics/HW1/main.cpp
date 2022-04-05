@@ -10,121 +10,184 @@
 using namespace std;
 
 //--Triangle--
-int cotX;  //Centor of Triangle X
-int cotY;  //Centor of Triangle Y
-int tH;    //Triangle Height
-int tBW;   //Triangle Basewidth
+vector<pair<int, int>> point;
+int triangle_p1X;
+int triangle_p1Y;
+int triangle_p2X;
+int triangle_p2Y;
+int triangle_p3X;
+int triangle_p3Y;
 //--Ractangle--
-int p1X;   //Point One X 
-int p1Y;   //Point One Y
-int p2X;   //Point Two X
-int p2Y;   //Point Two Y
+int ractangle_p1X;   //Point One X 
+int ractangle_p1Y;   //Point One Y
+int ractangle_p2X;   //Point Two X
+int ractangle_p2Y;   //Point Two Y
 //--Circle--
 int cocX;  //Centor of Circle X
 int cocY;  //Centor of Circle Y
 int Radius;
 
-//--bresenham--
-int startX;
-int startY;
-int endX;
-int endY;
+void plot8(int x, int y) {
+	glColor3d(1.0, 0.0, 0.0);
+	glVertex2i(cocX + x, cocY + y);
+	glVertex2i(cocX - x, cocY + y);
+	glVertex2i(cocX + x, cocY - y);
+	glVertex2i(cocX - x, cocY - y);
+	glVertex2i(cocX + y, cocY + x);
+	glVertex2i(cocX - y, cocY + x);
+	glVertex2i(cocX + y, cocY - x);
+	glVertex2i(cocX - y, cocY - x);
+}
 
+void bresenham(int startX, int startY, int endX, int endY, string whatFigure) {
+	int temp;
+	if (startX > endX) { // lower X is startpoint
+		temp = startX; startX = endX; endX = temp;
+		temp = startY; startY = endY; endY = temp;
+	}
 
-void bresenham() { //기울기가 0<m<1일 때 작동한다.
+	bool isDownside = false; // Line go to downside?
 	int x = startX;
 	int y = startY;
 	int W = endX - startX;
 	int H = endY - startY;
-	int F = 2 * H - W; 
-	int disF1 = 2 * H;
-	int disF2 = 2 * (H - W); 
-	for (x; x <= endX; ++x) {
-		glVertex2i(x, y); 
-		if (F < 0) {
-			F += disF1;
+	int F;
+
+	if (H < 0) isDownside = 1;
+
+	if (W >= H && isDownside == false) { // 0 < m < 1
+		F = 2 * H - W;
+		while (x <= endX) {
+			if (whatFigure == "TRIANGLE_OUTLINE") { point.push_back(pair<int, int>(x, y)); glVertex2i(x, y); }
+			else if(whatFigure == "CIRCLE_INLINE") plot8(x, y);
+			else glVertex2i(x, y);
+			if (F < 0) {
+				F += 2 * H;
+			}
+			else {
+				++y;
+				F += 2 * (H - W);
+			}
+			++x;
 		}
-		else {
+	}
+	else if (W < H && isDownside == false) { // 1 < m < infinite
+		F = 2 * W - H;
+		while (y <= endY) {
+			if (whatFigure == "TRIANGLE_OUTLINE") { point.push_back(pair<int, int>(x, y)); glVertex2i(x, y); }
+			else if (whatFigure == "CIRCLE_INLINE") plot8(x, y);
+			else glVertex2i(x, y);
+			if (F < 0) {
+				F += 2 * W;
+			}
+			else {
+				++x;
+				F += 2 * (W - H);
+			}
 			++y;
-			F += disF2;
+		}
+	}
+	else if (W > -H && isDownside == true) { // -1 < m < 0
+		F = 2 * H + W;
+		while (x <= endX) {
+			if (whatFigure == "TRIANGLE_OUTLINE") { point.push_back(pair<int, int>(x, y)); glVertex2i(x, y); }
+			else if (whatFigure == "CIRCLE_INLINE") plot8(x, y);
+			else glVertex2i(x, y);
+			if (F < 0) {
+				--y;
+				F += 2 * (H + W);
+			}
+			else {
+				F += 2 * H;
+			}
+			++x;
+		}
+	}
+	else { // -infinite < m < -1
+		F = 2 * W + H;
+		while (y >= endY) {
+			if (whatFigure == "TRIANGLE_OUTLINE") { point.push_back(pair<int, int>(x, y)); glVertex2i(x, y); }
+			else if (whatFigure == "CIRCLE_INLINE") plot8(x, y);
+			else glVertex2i(x, y);
+			if (F > 0) {
+				++x;
+				F += 2 * (H + W);
+			}
+			else {
+				F += 2 * W;
+			}
+			--y;
 		}
 	}
 }
 
-/*
-void triangle() { 
-	
-	startX = cotX - 0.5 * tBW;
-	startY = cotY - 0.33 * tH; 
-	endX = cotX;
-	endY = cotY + 0.66 * tH;  
-	
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBegin(GL_POINTS);
+void triangle() {
+	glColor3d(0.0, 0.0, 1.0);
 
-	int x;
-	int y=sy;
+	int centorX = (int)((triangle_p1X + triangle_p2X + triangle_p3X) / 3);
+	int centorY = (int)((triangle_p1Y + triangle_p2Y + triangle_p3Y) / 3);
 
-	for (x=sx; x <= ex; ++x) {
-		for (int ty = y; ty >= y; --ty) {
-			bresenham();
-		}
+	bresenham(centorX, centorY, triangle_p1X, triangle_p1Y, "");
+	bresenham(centorX, centorY, triangle_p2X, triangle_p2Y, "");
+	bresenham(centorX, centorY, triangle_p3X, triangle_p3Y, "");
+
+	bresenham(triangle_p1X, triangle_p1Y, triangle_p2X, triangle_p2Y, "TRIANGLE_OUTLINE");
+	for (int i = 0; i < point.size(); i++) { 	
+		bresenham(centorX, centorY, point[i].first, point[i].second, "");
 	}
-	glEnd();
-	glFlush();
+	point.clear();
 
-}
-*/
-
-void oneEightCircle(int x, int y) {
-	int r = Radius;
-	startX = x;
-	startY = y;
-	double angle;
-
-	for (angle = 0.25 * 3.14; angle <= 0.5 * 3.14; angle += 0.01) {
-		endX = startX + r * sin(angle);
-		endY = startY + r * cos(angle);
-		bresenham();
+	bresenham(triangle_p2X, triangle_p2Y, triangle_p3X, triangle_p3Y, "TRIANGLE_OUTLINE");
+	for (int i = 0; i < point.size(); i++) { 
+		bresenham(centorX, centorY, point[i].first, point[i].second, "");
 	}
+	point.clear();
 
+	bresenham(triangle_p1X, triangle_p1Y, triangle_p3X, triangle_p3Y, "TRIANGLE_OUTLINE");
+	for (int i = 0; i < point.size(); i++) { 
+		bresenham(centorX, centorY, point[i].first, point[i].second, "");
+	}
+	point.clear();
 }
 
 void circle() {
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBegin(GL_POINTS);
 	glColor3d(1.0, 0.0, 0.0);
 
-	oneEightCircle(cocX, cocY);
-	oneEightCircle(cocX, -cocY);
-	oneEightCircle(-cocX, cocY);
-	oneEightCircle(-cocX, -cocY);
-	oneEightCircle(cocY, cocX);
-	oneEightCircle(cocY, -cocX);
-	oneEightCircle(-cocY, cocX);
-	oneEightCircle(-cocY, -cocX);
+	int r = Radius;
+	int x = r; // 3시 방향에서 시작함을 의미
+	int y = 0;
+	int F = 1 - r; // 반시계로 말아올리는 원의 판별식 초기값
 
-	glEnd();
-	glFlush();
+	glVertex2i(cocX + x, cocY + y); // 점을 찍을 때는 원의 중심만큼 이동해준다.
+	while (x > y) {
+		bresenham(0, 0, x, y, "CIRCLE_INLINE");
+		++y;
+		if (F < 0) {
+			F += 2 * y + 1;
+		}
+		else {
+			--x;
+			F += 2 * y - 2 * x + 1;
+		}
+	}
 }
 
+
 void ractangle() {
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBegin(GL_POINTS);
 	glColor3d(0.0, 1.0, 0.0);
-	int sx = (p1X < p2X) ? p1X : p2X; // s는 기울기가 양수인 대각선 아래쪽
-	int sy = (p1Y < p2Y) ? p1Y : p2Y;
-	int ex = (p1X < p2X) ? p2X : p1X; // e는 기울기가 양수인 대각선 위쪽
-	int ey = p2Y; (p1Y < p2Y) ? p2Y : p1Y;
+
+	int sx = (ractangle_p1X < ractangle_p2X) ? ractangle_p1X : ractangle_p2X; // s는 기울기가 양수인 대각선 아래쪽 점
+	int sy = (ractangle_p1Y < ractangle_p2Y) ? ractangle_p1Y : ractangle_p2Y;
+	int ex = (ractangle_p1X < ractangle_p2X) ? ractangle_p2X : ractangle_p1X; // e는 기울기가 양수인 대각선 위쪽 점
+	int ey = (ractangle_p1Y < ractangle_p2Y) ? ractangle_p2Y : ractangle_p1Y;
 
 	for (sx; sx <= ex; ++sx) {
 		for (int y = sy; y <= ey; ++y) {
 			glVertex2i(sx, y);
 		}
 	}
-	glEnd();
-	glFlush();
 }
+
 
 vector<string> split(vector<string> rawData, char Delimiter) { // 구분자를 기준으로 string split
 	vector<string> result;
@@ -152,24 +215,37 @@ vector<string> readFile() { // 파일을 한 줄씩 읽어서 rawData vector에 저장.
 	return rawData;
 }
 
+void playAll() {
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBegin(GL_POINTS);
+
+	circle();
+	ractangle();
+	triangle();
+
+	glEnd();
+	glFlush();
+}
+
 int main(int argc, char** argv)
 {
 	vector<string> splitResult = split(readFile(), ':');
 	//--Triangle--
-	cotX = stoi(splitResult[2]);  //Centor of Triangle X
-	cotY = stoi(splitResult[4]);  //Centor of Triangle Y
-	tH = stoi(splitResult[6]);    //Triangle Height
-	tBW = stoi(splitResult[8]);   //Triangle Basewidth
+	triangle_p1X = stoi(splitResult[2]);  //Point One X
+	triangle_p1Y = stoi(splitResult[4]);  //Point One Y
+	triangle_p2X = stoi(splitResult[6]);  //Point Two X
+	triangle_p2Y = stoi(splitResult[8]);  //Point Two Y
+	triangle_p3X = stoi(splitResult[10]);  //Point Three X
+	triangle_p3Y = stoi(splitResult[12]);  //Point Three Y
 	//--Ractangle--
-	p1X = stoi(splitResult[11]);   //Point One X 
-	p1Y = stoi(splitResult[13]);   //Point One Y
-	p2X = stoi(splitResult[15]);   //Point Two X
-	p2Y = stoi(splitResult[17]);   //Point Two Y
+	ractangle_p1X = stoi(splitResult[15]);   //Point One X 
+	ractangle_p1Y = stoi(splitResult[17]);   //Point One Y
+	ractangle_p2X = stoi(splitResult[19]);   //Point Two X
+	ractangle_p2Y = stoi(splitResult[21]);   //Point Two Y
 	//--Circle--
-	cocX = stoi(splitResult[20]);  //Centor of Circle X
-	cocY = stoi(splitResult[22]);  //Centor of Circle Y
-	Radius = stoi(splitResult[24]);
-
+	cocX = stoi(splitResult[24]);  //Centor of Circle X
+	cocY = stoi(splitResult[26]);  //Centor of Circle Y
+	Radius = stoi(splitResult[28]); // Radius of Circle
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
@@ -184,9 +260,7 @@ int main(int argc, char** argv)
 	glLoadIdentity();
 	glOrtho(-150.0, 150.0, -150.0, 150.0, -1.0, 1.0);
 
-	glutDisplayFunc(circle);
-	glutDisplayFunc(ractangle);
-	//glutDisplayFunc(triangle);
+	glutDisplayFunc(playAll);
 
 	glutMainLoop();
 
