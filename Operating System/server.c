@@ -10,8 +10,10 @@
 // in your browser type: http://localhost:8090
 // IF error: address in use then change the PORT number
 #define PORT 8090
+pthread_mutex_t mutex_lock;
 
 void* action() {
+    pthread_mutex_lock(&mutex_lock);
     int server_fd, new_socket; long valread;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
@@ -43,7 +45,7 @@ void* action() {
         perror("In listen");
         exit(EXIT_FAILURE);
     }
-
+    //while(1){
     printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 
     if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0)
@@ -59,15 +61,22 @@ void* action() {
     write(new_socket, hello, strlen(hello)); // 데이터 송수신(client socket)
     printf("-------------Hello message sent---------------");
     close(new_socket); //소켓 소멸 (client socket)
+    //}
+    sleep(60); // 얘 잔다!
+    pthread_mutex_unlock(&mutex_lock);
 }
 
 int main(int argc, char const *argv[])
 {
-    pthread_t t1;
+    pthread_t t1, t2;
+    pthread_mutex_init(&mutex_lock, NULL);
     
     pthread_create(&t1, NULL, action, NULL);
-    pthread_join(t1, NULL);
+    pthread_create(&t2, NULL, action, NULL);
 
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    
     return 0;
 }
 
